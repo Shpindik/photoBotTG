@@ -30,11 +30,6 @@ async def save_user_data(
             location,
             timestamp)
             VALUES ($1, $2, $3, $4, NOW())
-            ON CONFLICT (user_id) DO UPDATE
-            SET username = EXCLUDED.username,
-                fullname = EXCLUDED.fullname,
-                location = EXCLUDED.location,
-                timestamp = NOW()
             """,
             user_id,
             username,

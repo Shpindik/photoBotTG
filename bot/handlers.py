@@ -1,15 +1,14 @@
-import os
-import re
-from functools import wraps
-
 from db import save_user_data
 
 from states import LocationState
 import kb
+import asyncio
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, ContentType, FSInputFile, Message
+from aiogram.types import CallbackQuery, Message
+
+from dict import DICT as dict
 
 router = Router()
 
@@ -26,9 +25,12 @@ async def handle_start(message: Message, state: FSMContext):
 
     if location:
         await save_user_data(user_id, username, fullname, location)
-        await message.answer(f'Данные {location} получены')
+        await message.answer(
+            dict['hello'].format(name=message.from_user.first_name),
+            reply_markup=kb.problem_keyboard
+        )
     else:
-        await message.answer("Пожалуйста, введите ваш аргумент вручную:")
+        await message.answer(dict['get_location_manual'])
         await state.set_state(LocationState.waiting_for_location)
 
 
@@ -42,12 +44,48 @@ async def handle_manual_argument(message: Message, state: FSMContext):
     location = args
 
     if len(location) < 4:
-        await message.answer("Аргумент слишком короткий. Введите не менее 4 символов:")
+        await message.answer('Введите не менее 4 символов:')
         return
     elif len(location) > 100:
-        await message.answer("Аргумент слишком длинный. Введите не более 100 символов:")
+        await message.answer('Введите не более 100 символов:')
         return
 
     await save_user_data(user_id, username, fullname, location)
-    await message.answer("Спасибо! Данные сохранены.")
+    await message.answer(
+        dict['hello'].format(name=message.from_user.first_name),
+        reply_markup=kb.problem_keyboard
+    )
     await state.clear()
+
+
+@router.callback_query(F.data == 'drop_photo_cd')
+async def handle_drop_photo_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        dict['fix_1']
+    )
+    await asyncio.sleep(10)
+    await callback.message.answer(
+        text='Получилось?',
+        reply_markup=kb.problem_1_keyboard
+    )
+
+
+@router.callback_query(F.data == 'yes_1_cd')
+async def handle_yes_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        dict['fix_1_accept']
+    )
+
+
+@router.callback_query(F.data == 'no_1_cd')
+async def handle_no_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        dict['fix_1_decline']
+    )
+
+
+@router.callback_query(F.data == 'drop_screen_cd')
+async def handle_drop_screen_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        dict['fix_2']
+    )
