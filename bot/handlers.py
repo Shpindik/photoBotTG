@@ -2,7 +2,6 @@ from db import save_user_data
 
 from states import LocationState
 import kb
-import asyncio
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -58,34 +57,218 @@ async def handle_manual_argument(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.callback_query(F.data == 'drop_photo_cd')
-async def handle_drop_photo_cd(callback: CallbackQuery):
+@router.callback_query(F.data == 'main_cd')
+async def handle_main_cd(callback: CallbackQuery):
     await callback.message.edit_text(
-        dict['fix_1']
-    )
-    await asyncio.sleep(10)
-    await callback.message.answer(
-        text='Получилось?',
-        reply_markup=kb.problem_1_keyboard
+        text=dict['hello'].format(name=callback.from_user.first_name),
+        reply_markup=kb.problem_keyboard
     )
 
 
-@router.callback_query(F.data == 'yes_1_cd')
+@router.callback_query(F.data == 'problem_1_cd')
+async def handle_problem_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['problem_1_1'],
+        reply_markup=kb.problem_1_1_keyboard
+    )
+
+
+@router.callback_query(F.data == 'yes_1_1_cd')
 async def handle_yes_1_cd(callback: CallbackQuery):
     await callback.message.edit_text(
-        dict['fix_1_accept']
+        text=dict['goodbye'].format(name=callback.from_user.first_name),
+        reply_markup=kb.go_main_keyboard
     )
 
 
-@router.callback_query(F.data == 'no_1_cd')
+@router.callback_query(F.data == 'no_1_1_cd')
 async def handle_no_1_cd(callback: CallbackQuery):
     await callback.message.edit_text(
-        dict['fix_1_decline']
+        text='Были слышны звуки печати?',
+        reply_markup=kb.problem_1_2_keyboard
     )
 
 
-@router.callback_query(F.data == 'drop_screen_cd')
-async def handle_drop_screen_cd(callback: CallbackQuery):
+@router.callback_query(F.data == 'yes_1_2_cd')
+async def handle_yes_1_2_cd(callback: CallbackQuery):
     await callback.message.edit_text(
-        dict['fix_2']
+        text='Кажется, фото застряло. Попробуйте достать его рукой',
+        reply_markup=kb.problem_1_3_keyboard
+    )
+
+
+@router.callback_query(F.data == 'no_1_2_cd')
+async def handle_no_1_2_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'yes_1_3_cd')
+async def handle_yes_1_3_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['goodbye'].format(name=callback.from_user.first_name),
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'no_1_3_cd')
+async def handle_no_1_3_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_2_cd')
+async def handle_problem_2_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_3_cd')
+async def handle_problem_3_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry_3'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_4_cd')
+async def handle_problem_4_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text='Подскажите, купюроприемник горит красным цветом?',
+        reply_markup=kb.problem_4_1_keyboard
+    )
+
+
+@router.callback_query(F.data == 'yes_4_1_cd')
+async def handle_yes_4_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text='Вы уже оплатили часть стоимости?',
+        reply_markup=kb.problem_4_2_keyboard
+    )
+
+
+@router.callback_query(F.data == 'yes_4_2_cd')
+async def handle_yes_4_2_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'no_4_2_cd')
+async def handle_no_4_2_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['goodbye_4'].format(name=callback.from_user.first_name),
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'no_4_1_cd')
+async def handle_no_4_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['problem_4_1'],
+        reply_markup=kb.problem_4_3_keyboard
+    )
+
+
+@router.callback_query(F.data == 'yes_4_3_cd')
+async def handle_yes_4_3_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['goodbye'].format(name=callback.from_user.first_name),
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'no_4_3_cd')
+async def handle_no_4_3_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_5_cd')
+async def handle_problem_5_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_6_cd')
+async def handle_problem_6_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text='На экране горит красный крест?',
+        reply_markup=kb.problem_6_1_keyboard
+
+    )
+
+
+@router.callback_query(F.data == 'yes_6_1_cd')
+async def handle_yes_6_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['problem_6_1'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'no_6_1_cd')
+async def handle_no_6_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['problem_6_1'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_7_cd')
+async def handle_problem_7_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text='На экране поменялась заставка?',
+        reply_markup=kb.problem_7_1_keyboard
+    )
+
+
+@router.callback_query(F.data == 'yes_7_1_cd')
+async def handle_yes_7_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'no_7_1_cd')
+async def handle_no_7_1_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_8_cd')
+async def handle_problem_8_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_9_cd')
+async def handle_problem_9_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
+    )
+
+
+@router.callback_query(F.data == 'problem_10_cd')
+async def handle_problem_10_cd(callback: CallbackQuery):
+    await callback.message.edit_text(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard
     )
