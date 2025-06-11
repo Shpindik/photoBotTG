@@ -196,3 +196,14 @@ problem_7_1_keyboard = InlineKeyboardMarkup(
         ],
     ]
 )
+
+close_task_keyboard = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text='Закрыть задачу',
+                callback_data='close_task_cd'
+            ),
+        ]
+    ]
+)
