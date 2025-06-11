@@ -1,5 +1,5 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
+from aiogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
+                           KeyboardButton, ReplyKeyboardMarkup)
 from dict import DICT as dict
 
 go_main_keyboard = InlineKeyboardMarkup(
@@ -206,4 +206,12 @@ close_task_keyboard = InlineKeyboardMarkup(
             ),
         ]
     ]
+)
+
+request_contact_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="Отправить контакт", request_contact=True)]
+    ],
+    resize_keyboard=True,
+    one_time_keyboard=True
 )

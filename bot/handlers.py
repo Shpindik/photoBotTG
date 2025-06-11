@@ -1,6 +1,7 @@
 from db import save_user_data, save_problem, get_admin_message
 
 import os
+import time
 from states import LocationState
 import kb
 from aiogram import F, Router
@@ -20,6 +21,17 @@ bot = Bot(token=os.getenv('BOT_TOKEN'))
 
 @router.message(Command('start'))
 async def handle_start(message: Message, state: FSMContext):
+    data = await state.get_data()
+    now = time.time()
+    last_start = data.get('last_start', 0)
+    if now - last_start < 3:
+        return
+    await state.update_data(last_start=now)
+
+    user_state = await state.get_state()
+    if user_state is not None:
+        return
+
     command_parts = message.text.split(maxsplit=1)
     args = command_parts[1] if len(command_parts) > 1 else None
     user_id = message.from_user.id
@@ -27,6 +39,15 @@ async def handle_start(message: Message, state: FSMContext):
     fullname = message.from_user.full_name
 
     location = args
+
+    if not username:
+        await state.update_data(location=location)
+        await message.answer(
+            'У вас не установлен username в Telegram. Пожалуйста, '
+            'отправьте свой контакт:',
+            reply_markup=kb.request_contact_keyboard
+        )
+        return
 
     if location:
         await save_user_data(user_id, username, fullname, location)
@@ -56,6 +77,23 @@ async def handle_manual_argument(message: Message, state: FSMContext):
         return
 
     await save_user_data(user_id, username, fullname, location)
+    await message.answer(
+        dict['hello'].format(name=message.from_user.first_name),
+        reply_markup=kb.problem_keyboard
+    )
+    await state.clear()
+
+
+@router.message(lambda m: m.contact is not None)
+async def handle_contact(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    fullname = message.from_user.full_name
+    phone_number = message.contact.phone_number
+
+    data = await state.get_data()
+    location = data.get('location')
+    await save_user_data(
+        user_id, phone_number, fullname, location)
     await message.answer(
         dict['hello'].format(name=message.from_user.first_name),
         reply_markup=kb.problem_keyboard
