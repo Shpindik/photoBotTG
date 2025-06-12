@@ -75,6 +75,12 @@ problem_keyboard = InlineKeyboardMarkup(
                 callback_data='problem_10_cd'
             ),
         ],
+        [
+            InlineKeyboardButton(
+                text=dict['problem_11'],
+                callback_data='problem_11_cd'
+            ),
+        ],
     ]
 )
 

@@ -2,7 +2,7 @@ from db import save_user_data, save_problem, get_admin_message
 
 import os
 import time
-from states import LocationState
+from states import LocationState, ProblemState
 import kb
 from aiogram import F, Router
 from aiogram.filters import Command
@@ -53,7 +53,8 @@ async def handle_start(message: Message, state: FSMContext):
         await save_user_data(user_id, username, fullname, location)
         await message.answer(
             dict['hello'].format(name=message.from_user.first_name),
-            reply_markup=kb.problem_keyboard
+            reply_markup=kb.problem_keyboard,
+            parse_mode='HTML'
         )
     else:
         await message.answer(dict['get_location_manual'])
@@ -152,7 +153,8 @@ async def handle_no_1_2_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -175,7 +177,8 @@ async def handle_no_1_3_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -190,7 +193,8 @@ async def handle_problem_2_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -205,7 +209,8 @@ async def handle_problem_3_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry_3'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -236,7 +241,8 @@ async def handle_yes_4_2_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -244,7 +250,8 @@ async def handle_yes_4_2_cd(callback: CallbackQuery):
 async def handle_no_4_2_cd(callback: CallbackQuery):
     await callback.message.edit_text(
         text=dict['goodbye_4'].format(name=callback.from_user.first_name),
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -252,7 +259,8 @@ async def handle_no_4_2_cd(callback: CallbackQuery):
 async def handle_no_4_1_cd(callback: CallbackQuery):
     await callback.message.edit_text(
         text=dict['problem_4_1'],
-        reply_markup=kb.problem_4_3_keyboard
+        reply_markup=kb.problem_4_3_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -274,8 +282,9 @@ async def handle_no_4_3_cd(callback: CallbackQuery):
         reply_markup=kb.close_task_keyboard
     )
     await callback.message.edit_text(
-        text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        text=dict['sorry_4_3'],
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -290,7 +299,8 @@ async def handle_problem_5_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -338,7 +348,8 @@ async def handle_yes_7_1_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -353,7 +364,8 @@ async def handle_no_7_1_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -368,7 +380,8 @@ async def handle_problem_8_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -383,7 +396,8 @@ async def handle_problem_9_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -399,8 +413,44 @@ async def handle_problem_10_cd(callback: CallbackQuery):
     )
     await callback.message.edit_text(
         text=dict['sorry'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
+
+
+@router.callback_query(F.data == 'problem_11_cd')
+async def handle_problem_11_cd(callback: CallbackQuery, state: FSMContext):
+    await callback.message.edit_text(
+        text='Пожалуйста, опишите свою проблему:',
+    )
+    await state.set_state(ProblemState.waiting_for_description)
+
+
+@router.message(ProblemState.waiting_for_description)
+async def handle_problem_description(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    problem_description = message.text.strip()
+
+    await save_problem(user_id, problem_description)
+
+    message_to_admin = await get_admin_message(user_id, problem_description)
+    await bot.send_message(
+        chat_id=ADMIN_ID,
+        text=message_to_admin,
+        reply_markup=kb.close_task_keyboard
+    )
+
+    await message.delete()
+    await message.answer(
+        text=dict['sorry'],
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
+    )
+    await message.bot.delete_message(
+        chat_id=message.chat.id,
+        message_id=message.message_id - 1
+    )
+    await state.clear()
 
 
 @router.callback_query(F.data == 'close_task_cd')
