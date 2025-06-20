@@ -144,8 +144,14 @@ async def handle_yes_1_2_cd(callback: CallbackQuery):
 
 @router.callback_query(F.data == 'no_1_2_cd')
 async def handle_no_1_2_cd(callback: CallbackQuery):
-    await save_problem(callback.from_user.id, dict['problem_1'])
-    message = await get_admin_message(callback.from_user.id, dict['problem_1'])
+    await save_problem(
+        callback.from_user.id,
+        dict['problem_1']+dict['error_1']
+    )
+    message = await get_admin_message(
+        callback.from_user.id,
+        dict['problem_1']+dict['error_1']
+    )
     await bot.send_message(
         chat_id=ADMIN_ID,
         text=message,
@@ -168,8 +174,14 @@ async def handle_yes_1_3_cd(callback: CallbackQuery):
 
 @router.callback_query(F.data == 'no_1_3_cd')
 async def handle_no_1_3_cd(callback: CallbackQuery):
-    await save_problem(callback.from_user.id, dict['problem_1'])
-    message = await get_admin_message(callback.from_user.id, dict['problem_1'])
+    await save_problem(
+        callback.from_user.id,
+        dict['problem_1']+dict['error_2']
+    )
+    message = await get_admin_message(
+        callback.from_user.id,
+        dict['problem_1']+dict['error_2']
+    )
     await bot.send_message(
         chat_id=ADMIN_ID,
         text=message,
@@ -232,8 +244,14 @@ async def handle_yes_4_1_cd(callback: CallbackQuery):
 
 @router.callback_query(F.data == 'yes_4_2_cd')
 async def handle_yes_4_2_cd(callback: CallbackQuery):
-    await save_problem(callback.from_user.id, dict['problem_4'])
-    message = await get_admin_message(callback.from_user.id, dict['problem_4'])
+    await save_problem(
+        callback.from_user.id,
+        dict['problem_4']+dict['error_3']
+    )
+    message = await get_admin_message(
+        callback.from_user.id,
+        dict['problem_4']+dict['error_3']
+    )
     await bot.send_message(
         chat_id=ADMIN_ID,
         text=message,
@@ -274,8 +292,14 @@ async def handle_yes_4_3_cd(callback: CallbackQuery):
 
 @router.callback_query(F.data == 'no_4_3_cd')
 async def handle_no_4_3_cd(callback: CallbackQuery):
-    await save_problem(callback.from_user.id, dict['problem_4'])
-    message = await get_admin_message(callback.from_user.id, dict['problem_4'])
+    await save_problem(
+        callback.from_user.id,
+        dict['problem_4']+dict['error_4']
+    )
+    message = await get_admin_message(
+        callback.from_user.id,
+        dict['problem_4']+dict['error_4']
+    )
     await bot.send_message(
         chat_id=ADMIN_ID,
         text=message,
@@ -315,17 +339,45 @@ async def handle_problem_6_cd(callback: CallbackQuery):
 
 @router.callback_query(F.data == 'yes_6_1_cd')
 async def handle_yes_6_1_cd(callback: CallbackQuery):
+    await save_problem(
+        callback.from_user.id,
+        dict['problem_6']+dict['error_5']
+    )
+    message = await get_admin_message(
+        callback.from_user.id,
+        dict['problem_6']+dict['error_5']
+    )
+    await bot.send_message(
+        chat_id=ADMIN_ID,
+        text=message,
+        reply_markup=kb.close_task_keyboard
+    )
     await callback.message.edit_text(
         text=dict['problem_6_1'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
 @router.callback_query(F.data == 'no_6_1_cd')
 async def handle_no_6_1_cd(callback: CallbackQuery):
+    await save_problem(
+        callback.from_user.id,
+        dict['problem_6']+dict['error_6']
+    )
+    message = await get_admin_message(
+        callback.from_user.id,
+        dict['problem_6']+dict['error_6']
+    )
+    await bot.send_message(
+        chat_id=ADMIN_ID,
+        text=message,
+        reply_markup=kb.close_task_keyboard
+    )
     await callback.message.edit_text(
         text=dict['problem_6_1'],
-        reply_markup=kb.go_main_keyboard
+        reply_markup=kb.go_main_keyboard,
+        parse_mode='HTML'
     )
 
 
@@ -339,8 +391,14 @@ async def handle_problem_7_cd(callback: CallbackQuery):
 
 @router.callback_query(F.data == 'yes_7_1_cd')
 async def handle_yes_7_1_cd(callback: CallbackQuery):
-    await save_problem(callback.from_user.id, dict['problem_7'])
-    message = await get_admin_message(callback.from_user.id, dict['problem_7'])
+    await save_problem(
+        callback.from_user.id,
+        dict['problem_7']+dict['error_8']
+    )
+    message = await get_admin_message(
+        callback.from_user.id,
+        dict['problem_7']+dict['error_8']
+    )
     await bot.send_message(
         chat_id=ADMIN_ID,
         text=message,
@@ -355,8 +413,14 @@ async def handle_yes_7_1_cd(callback: CallbackQuery):
 
 @router.callback_query(F.data == 'no_7_1_cd')
 async def handle_no_7_1_cd(callback: CallbackQuery):
-    await save_problem(callback.from_user.id, dict['problem_7'])
-    message = await get_admin_message(callback.from_user.id, dict['problem_7'])
+    await save_problem(
+        callback.from_user.id,
+        dict['problem_7']+dict['error_7']
+    )
+    message = await get_admin_message(
+        callback.from_user.id,
+        dict['problem_7']+dict['error_7']
+    )
     await bot.send_message(
         chat_id=ADMIN_ID,
         text=message,
@@ -439,8 +503,6 @@ async def handle_problem_description(message: Message, state: FSMContext):
         text=message_to_admin,
         reply_markup=kb.close_task_keyboard
     )
-
-    await message.delete()
     await message.answer(
         text=dict['sorry'],
         reply_markup=kb.go_main_keyboard,
