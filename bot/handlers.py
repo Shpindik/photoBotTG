@@ -1,8 +1,8 @@
-from db import save_user_data, save_problem, get_admin_message
+from db import save_user_data, save_problem, get_admin_message, save_phone_number
 
 import os
 import time
-from states import LocationState, ProblemState
+from states import LocationState, ProblemState, PhoneState
 import kb
 from aiogram import F, Router
 from aiogram.filters import Command
@@ -42,6 +42,7 @@ async def handle_start(message: Message, state: FSMContext):
 
     if not username:
         await state.update_data(location=location)
+        await state.set_state(PhoneState.waiting_for_phone)
         await message.answer(
             'У вас не установлен username в Telegram. Пожалуйста, '
             'отправьте свой контакт:',
@@ -51,6 +52,7 @@ async def handle_start(message: Message, state: FSMContext):
 
     if location:
         await save_user_data(user_id, username, fullname, location)
+        await state.set_state(PhoneState.waiting_for_phone)
         await message.answer(
             dict['hello'].format(name=message.from_user.first_name),
             reply_markup=kb.problem_keyboard,
@@ -78,26 +80,55 @@ async def handle_manual_argument(message: Message, state: FSMContext):
         return
 
     await save_user_data(user_id, username, fullname, location)
+    await state.set_state(PhoneState.waiting_for_phone)
     await message.answer(
-        dict['hello'].format(name=message.from_user.first_name),
-        reply_markup=kb.problem_keyboard
+        "Пожалуйста, укажите номер телефона для связи",
+        reply_markup=kb.request_contact_keyboard
     )
-    await state.clear()
 
 
-@router.message(lambda m: m.contact is not None)
-async def handle_contact(message: Message, state: FSMContext):
+@router.message(PhoneState.waiting_for_phone)
+async def handle_phone_number(message: Message, state: FSMContext):
     user_id = message.from_user.id
-    fullname = message.from_user.full_name
-    phone_number = message.contact.phone_number
+    phone = None
+    if message.contact:
+        phone = message.contact.phone_number
+    elif message.text:
+        phone = message.text.strip()
 
+    if not phone:
+        await message.answer("Пожалуйста, укажите номер телефона для связи, отправив контакт или введя его вручную.")
+        return
+
+    # Форматирование номера телефона в +7...
+    digits = "".join(filter(str.isdigit, phone))
+    if len(digits) == 11 and digits.startswith('8'):
+        phone = '+7' + digits[1:]
+    elif len(digits) == 10:
+        phone = '+7' + digits
+    elif len(digits) >= 11 and digits.startswith('7'):
+        phone = '+' + digits
+    else:
+        # Для случаев, когда номер не 10 или 11 цифр, просто добавляем +, если его нет
+        phone = '+' + digits if digits else phone
+
+    await save_phone_number(user_id, phone)
+
+    # Если мы сохранили локацию в состоянии (для пользователей без username)
     data = await state.get_data()
     location = data.get('location')
-    await save_user_data(
-        user_id, phone_number, fullname, location)
+    if location:
+        await save_user_data(
+            user_id,
+            message.from_user.username or '',
+            message.from_user.full_name,
+            location
+        )
+
     await message.answer(
         dict['hello'].format(name=message.from_user.first_name),
-        reply_markup=kb.problem_keyboard
+        reply_markup=kb.problem_keyboard,
+        parse_mode='HTML'
     )
     await state.clear()
 

@@ -46,6 +46,26 @@ async def save_user_data(
         await conn.close()
 
 
+async def save_phone_number(user_id: int, phone: str):
+    conn = await asyncpg.connect(
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME,
+        host=DB_HOST,
+        port=DB_PORT,
+    )
+    try:
+        await conn.execute(
+            """
+            INSERT INTO phone_number (user_id, phone)
+            VALUES ($1, $2)
+            """,
+            user_id, phone
+        )
+    finally:
+        await conn.close()
+
+
 async def save_problem(user_id: int, problem: str):
     conn = await asyncpg.connect(
         user=DB_USER,
@@ -76,15 +96,35 @@ async def get_admin_message(user_id: int, problem: str):
     )
     try:
         user = await conn.fetchrow(
-            "SELECT username, fullname, location "
-            "FROM users WHERE user_id = $1",
+            """
+            SELECT u.username, u.fullname, u.location, p.phone
+            FROM users u
+            LEFT JOIN phone_number p ON u.user_id = p.user_id
+            WHERE u.user_id = $1
+            ORDER BY p.timestamp DESC
+            LIMIT 1
+            """,
             user_id
         )
         if user:
+            # Форматирование номера для админа (на случай, если в базе старый формат)
+            phone = user['phone'] or '—'
+            if phone != '—':
+                digits = "".join(filter(str.isdigit, phone))
+                if len(digits) == 11 and digits.startswith('8'):
+                    phone = '+7' + digits[1:]
+                elif len(digits) == 10:
+                    phone = '+7' + digits
+                elif len(digits) >= 11 and digits.startswith('7'):
+                    phone = '+' + digits
+                else:
+                    phone = '+' + digits if digits else phone
+
             return (
-                f"🚨 Шеф! Все сломалось 🔥\n\n"
+                f"🚨 Федя! Шпингалеты лопнули 🔥\n\n"
                 f"👤 Имя: {user['fullname'] or '—'}\n"
-                f"😱 Username: @{user['username'] or '—'}\n"
+                f"😱 Юзернейм: @{user['username'] or '—'}\n"
+                f"📱 Телефон: {phone}\n"
                 f"📍 Локация: {user['location'] or '—'}\n"
                 f"❗️ Проблема: {problem}"
             )
