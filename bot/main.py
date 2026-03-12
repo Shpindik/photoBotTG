@@ -7,6 +7,7 @@ import psycopg2
 
 from aiogram import Bot, Dispatcher
 from dotenv import load_dotenv
+from db import init_db
 from handlers import router
 from pathlib import Path
 
@@ -56,6 +57,9 @@ def get_db_connection():
 
 async def main():
     print('Бот запущен. Для остановки нажмите Ctrl+C.')
+
+    await init_db()
+    logging.info('Схема базы данных проверена и при необходимости создана.')
 
     await bot.delete_webhook(drop_pending_updates=True)
     polling_task = asyncio.create_task(

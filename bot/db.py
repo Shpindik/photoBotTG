@@ -1,4 +1,6 @@
+import asyncio
 import asyncpg
+import logging
 import os
 
 DB_NAME = os.getenv('POSTGRES_DB', 'postgres_db')
@@ -9,18 +11,74 @@ DB_PORT = int(os.getenv('DB_PORT', 5432))
 ADMIN_ID = os.getenv('ADMIN_ID', '123456789')
 
 
-async def save_user_data(
-        user_id: int,
-        username: str,
-        fullname: str,
-        location: str):
-    conn = await asyncpg.connect(
+async def get_db_connection():
+    return await asyncpg.connect(
         user=DB_USER,
         password=DB_PASSWORD,
         database=DB_NAME,
         host=DB_HOST,
         port=DB_PORT,
     )
+
+
+async def init_db(retries: int = 10, delay: int = 2):
+    last_error = None
+
+    for attempt in range(1, retries + 1):
+        try:
+            conn = await get_db_connection()
+            try:
+                await conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS users (
+                        user_id BIGINT PRIMARY KEY,
+                        username VARCHAR(255),
+                        fullname VARCHAR(255),
+                        location TEXT,
+                        timestamp TIMESTAMPTZ DEFAULT NOW()
+                    );
+
+                    CREATE TABLE IF NOT EXISTS user_problems (
+                        id SERIAL PRIMARY KEY,
+                        user_id BIGINT NOT NULL,
+                        problem TEXT NOT NULL,
+                        timestamp TIMESTAMPTZ DEFAULT NOW(),
+                        CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                    );
+
+                    CREATE TABLE IF NOT EXISTS phone_number (
+                        id SERIAL PRIMARY KEY,
+                        user_id BIGINT NOT NULL,
+                        phone VARCHAR(20) NOT NULL,
+                        timestamp TIMESTAMPTZ DEFAULT NOW(),
+                        CONSTRAINT fk_user_phone FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
+                    );
+                    """
+                )
+                return
+            finally:
+                await conn.close()
+        except (asyncpg.PostgresError, OSError) as error:
+            last_error = error
+            logging.warning(
+                'Не удалось инициализировать БД. Попытка %s/%s через %s сек. Ошибка: %s',
+                attempt,
+                retries,
+                delay,
+                error,
+            )
+            if attempt < retries:
+                await asyncio.sleep(delay)
+
+    raise last_error
+
+
+async def save_user_data(
+        user_id: int,
+        username: str,
+        fullname: str,
+        location: str):
+    conn = await get_db_connection()
     try:
         await conn.execute(
             """
@@ -47,13 +105,7 @@ async def save_user_data(
 
 
 async def save_phone_number(user_id: int, phone: str):
-    conn = await asyncpg.connect(
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME,
-        host=DB_HOST,
-        port=DB_PORT,
-    )
+    conn = await get_db_connection()
     try:
         await conn.execute(
             """
@@ -67,13 +119,7 @@ async def save_phone_number(user_id: int, phone: str):
 
 
 async def save_problem(user_id: int, problem: str):
-    conn = await asyncpg.connect(
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME,
-        host=DB_HOST,
-        port=DB_PORT,
-    )
+    conn = await get_db_connection()
     try:
         await conn.execute(
             """
@@ -87,13 +133,7 @@ async def save_problem(user_id: int, problem: str):
 
 
 async def get_admin_message(user_id: int, problem: str):
-    conn = await asyncpg.connect(
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME,
-        host=DB_HOST,
-        port=DB_PORT,
-    )
+    conn = await get_db_connection()
     try:
         user = await conn.fetchrow(
             """
