@@ -161,7 +161,7 @@ async def get_admin_message(user_id: int, problem: str):
                     phone = '+' + digits if digits else phone
 
             return (
-                f"🚨 Федя! Шпингалеты лопнули 🔥\n\n"
+                f"🚨 Шеф! Все сломалось 🔥\n\n"
                 f"👤 Имя: {user['fullname'] or '—'}\n"
                 f"😱 Юзернейм: @{user['username'] or '—'}\n"
                 f"📱 Телефон: {phone}\n"
