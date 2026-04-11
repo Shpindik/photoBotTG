@@ -104,9 +104,21 @@ async def save_user_data(
         await conn.close()
 
 
+async def ensure_user_exists(conn: asyncpg.Connection, user_id: int):
+    await conn.execute(
+        """
+        INSERT INTO users (user_id, timestamp)
+        VALUES ($1, NOW())
+        ON CONFLICT (user_id) DO NOTHING
+        """,
+        user_id
+    )
+
+
 async def save_phone_number(user_id: int, phone: str):
     conn = await get_db_connection()
     try:
+        await ensure_user_exists(conn, user_id)
         await conn.execute(
             """
             INSERT INTO phone_number (user_id, phone)
@@ -121,6 +133,7 @@ async def save_phone_number(user_id: int, phone: str):
 async def save_problem(user_id: int, problem: str):
     conn = await get_db_connection()
     try:
+        await ensure_user_exists(conn, user_id)
         await conn.execute(
             """
             INSERT INTO user_problems (user_id, problem)
