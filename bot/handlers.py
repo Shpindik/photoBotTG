@@ -7,7 +7,7 @@ import kb
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery, Message, ReplyKeyboardRemove
 from aiogram import Bot
 
 from dict import DICT as dict
@@ -129,6 +129,14 @@ async def handle_phone_number(message: Message, state: FSMContext):
             location
         )
 
+    remove_keyboard_message = await message.answer(
+        " ",
+        reply_markup=ReplyKeyboardRemove()
+    )
+    await message.bot.delete_message(
+        chat_id=message.chat.id,
+        message_id=remove_keyboard_message.message_id
+    )
     await message.answer(
         dict['hello'].format(name=message.from_user.first_name),
         reply_markup=kb.problem_keyboard,
