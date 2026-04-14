@@ -130,9 +130,14 @@ async def handle_phone_number(message: Message, state: FSMContext):
         )
 
     remove_keyboard_message = await message.answer(
-        " ",
+        "Спасибо, контакт получен!",
         reply_markup=ReplyKeyboardRemove()
     )
+    await message.bot.delete_message(
+        chat_id=message.chat.id,
+        message_id=message.message_id
+    )
+    await time.sleep(3)
     await message.bot.delete_message(
         chat_id=message.chat.id,
         message_id=remove_keyboard_message.message_id
