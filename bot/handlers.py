@@ -1,3 +1,4 @@
+import asyncio
 from db import save_user_data, save_problem, get_admin_message, save_phone_number
 
 import os
@@ -137,7 +138,7 @@ async def handle_phone_number(message: Message, state: FSMContext):
         chat_id=message.chat.id,
         message_id=message.message_id
     )
-    await time.sleep(3)
+    await asyncio.sleep(3)
     await message.bot.delete_message(
         chat_id=message.chat.id,
         message_id=remove_keyboard_message.message_id
