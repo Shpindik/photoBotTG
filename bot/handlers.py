@@ -65,6 +65,10 @@ async def handle_start(message: Message, state: FSMContext):
 
 @router.message(LocationState.waiting_for_location)
 async def handle_manual_argument(message: Message, state: FSMContext):
+    if not message.text:
+        await message.answer('Пожалуйста, введите адрес текстом:')
+        return
+
     args = message.text.strip()
     user_id = message.from_user.id
     username = message.from_user.username
@@ -524,7 +528,14 @@ async def handle_problem_11_cd(callback: CallbackQuery, state: FSMContext):
 @router.message(ProblemState.waiting_for_description)
 async def handle_problem_description(message: Message, state: FSMContext):
     user_id = message.from_user.id
+    if not message.text:
+        await message.answer('Пожалуйста, опишите проблему текстовым сообщением.')
+        return
+
     problem_description = message.text.strip()
+    if not problem_description:
+        await message.answer('Описание не должно быть пустым. Напишите пару слов о проблеме.')
+        return
 
     await save_problem(user_id, problem_description)
 

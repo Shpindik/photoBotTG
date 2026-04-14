@@ -27,7 +27,7 @@
 
 2.  **Запустите контейнеры:**
     ```bash
-    docker-compose up -d --build
+    docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
     ```
 
 Проект автоматически создаст базу данных (используя `init.sql`), установит все зависимости и запустит бота.
